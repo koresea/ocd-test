@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>强迫症 & 焦虑症 自评测试</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+            background: linear-gradient(135deg, #f0f2f5 0%, #e8ecf1 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 28px 20px; }
+        h1 { font-size: 22px; text-align: center; } .sub { text-align: center; color: #999; font-size: 13px; margin-bottom: 20px; }
+        .tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #8d6b00; margin-bottom: 20px; line-height: 1.6; }
+        .bar { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+        .bar div { height: 100%; background: #7c4dff; border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+        /* 类型选择 */
+        .type-select { display: flex; gap: 12px; margin-bottom: 24px; }
+        .type-btn {
+            flex: 1; padding: 14px; border: 2px solid #e0e0e0; border-radius: 12px;
+            text-align: center; cursor: pointer; transition: 0.2s; font-size: 15px; font-weight: 600;
+        }
+        .type-btn:hover { border-color: #b388ff; background: #f8f6ff; }
+        .type-btn.active { border-color: #7c4dff; background: #f3edff; color: #7c4dff; }
+
+        .qn { font-size: 12px; color: #bbb; margin-bottom: 4px; }
+        .qt { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .qd { font-size: 13px; color: #888; margin-bottom: 14px; }
+        .opts { display: flex; flex-direction: column; gap: 8px; }
+        .opt-item {
+            display: block; padding: 12px 16px; border: 2px solid #e8e8e8;
+            border-radius: 10px; cursor: pointer; font-size: 15px; transition: 0.2s;
+        }
+        .opt-item:hover { border-color: #b388ff; background: #f8f6ff; }
+        .opt-item.selected { border-color: #7c4dff; background: #f3edff; font-weight: 600; }
+
+        .btn-wrap { margin-top: 16px; }
+        .btn {
+            display: block; width: 100%; padding: 14px; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .btn-primary { background: #7c4dff; color: #fff; }
+        .btn-primary:hover { background: #651fff; }
+        .btn-primary:disabled { background: #d9d9d9; color: #aaa; cursor: not-allowed; }
+        .btn-secondary { background: #f0f0f0; color: #555; }
+        .btn-secondary:hover { background: #e0e0e0; }
+
+        .result-wrap { }
+        .result-header { text-align: center; margin-bottom: 20px; }
+        .score { font-size: 48px; font-weight: 800; color: #7c4dff; }
+        .score-label { font-size: 14px; color: #888; }
+        .r-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .r-desc { font-size: 14px; color: #555; line-height: 1.8; margin-bottom: 12px; }
+        .r-card { background: #f9f9fb; border-radius: 12px; padding: 18px; margin-bottom: 16px; text-align: left; font-size: 14px; line-height: 1.8; border: 1px solid #eee; }
+        .hidden { display: none; }
+        .share { background: #f3edff; border-radius: 10px; padding: 14px; margin-bottom: 12px; text-align: center; cursor: pointer; }
+        .share p { color: #7c4dff; font-weight: 500; font-size: 14px; }
+        .back-btn { margin-top: 12px; }
+        .chart-wrap { background: #f9f9fb; border-radius: 12px; padding: 18px; margin-bottom: 16px; border: 1px solid #eee; }
+        .chart-wrap h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #333; }
+        .chart-row { display: flex; align-items: center; margin-bottom: 10px; gap: 8px; }
+        .chart-label { font-size: 13px; font-weight: 500; min-width: 80px; color: #555; }
+        .chart-bar-bg { flex: 1; height: 22px; background: #f0f0f0; border-radius: 11px; overflow: hidden; }
+        .chart-bar-fill { height: 100%; border-radius: 11px; transition: width 0.8s ease; display: flex; align-items: center; padding-left: 8px; }
+        .chart-bar-fill span { font-size: 11px; color: #fff; font-weight: 600; }
+        .chart-max { font-size: 12px; color: #aaa; min-width: 40px; text-align: right; }
+        footer { text-align: center; font-size: 12px; color: #ccc; margin-top: 20px; padding-top: 14px; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>心理健康自评测试</h1>
+    <p class="sub">基于三甲医院临床标准量表 · 仅供参考不构成诊断</p>
+    <div class="tip">选择你想测试的项目，完成后可换另一个测试。</div>
+
+    <div class="bar"><div id="pg"></div></div>
+
+    <!-- 测试选择 -->
+    <div id="selectArea">
+        <p style="font-size:14px;color:#888;margin-bottom:12px;">请选择测试项目：</p>
+        <div class="type-select">
+            <div class="type-btn" onclick="startTest('ocd')">
+                🧠 强迫症测试<br>
+                <span style="font-size:12px;font-weight:400;color:#999;">Y-BOCS 标准版 · 10题</span>
+            </div>
+            <div class="type-btn" onclick="startTest('anxiety')">
+                💧 焦虑症测试<br>
+                <span style="font-size:12px;font-weight:400;color:#999;">GAD-7 标准版 · 7题</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 问卷 -->
+    <div id="qArea" class="hidden">
+        <div id="testTypeLabel" style="font-size:13px;color:#7c4dff;font-weight:600;margin-bottom:8px;"></div>
+        <p class="qn" id="qNum"></p>
+        <div class="qt" id="qTitle"></div>
+        <div class="qd" id="qDesc"></div>
+        <div class="opts" id="qOpts"></div>
+        <div class="btn-wrap"><button class="btn btn-primary" id="nextBtn" onclick="nextQ()" disabled>下一题</button></div>
+    </div>
+
+    <!-- 结果 -->
+    <div id="rArea" class="hidden result-wrap">
+        <div class="result-header">
+            <div class="score" id="rScore">0</div>
+            <div class="score-label">总分</div>
+        </div>
+        <div class="r-title" id="rTitle"></div>
+        <div class="r-desc" id="rDesc"></div>
+        <div class="chart-wrap" id="chartArea">
+            <h3>📊 综合评估</h3>
+            <div id="chartContent"></div>
+        </div>
+        <div class="r-card" id="rCard"></div>
+        <div class="share" onclick="copyLink()"><p>📤 分享给可能需要的人</p></div>
+        <div class="btn-wrap back-btn"><button class="btn btn-secondary" onclick="backToSelect()">返回选择其他测试</button></div>
+        <div class="btn-wrap"><button class="btn btn-secondary" onclick="retake()">重新测一次</button></div>
+    </div>
+
+    <footer>顺其自然，为所当为</footer>
+</div>
+
+<script>
+// ==================== Y-BOCS 强迫症量表（临床标准版10题） ====================
+const ocdQ = [
+    {q:"每天花多长时间在反复出现的想法上？", d:"比如反复想到手不干净、门没锁、会不会出事等", opts:["完全没有","每天少于1小时","1-3小时","3-8小时","超过8小时"]},
+    {q:"这些反复出现的想法让你多痛苦？", d:"它们打扰你正常生活了吗？", opts:["完全不痛苦","轻微，还能正常","中等，经常被打扰","严重，很难正常","极其严重"]},
+    {q:"你多努力去抵抗这些想法？", d:"试过告诉自己别想了？", opts:["不需要抵抗","稍微努力就能","费劲才能压住","大部分压不住","完全抵抗不了"]},
+    {q:"你能控制这些想法吗？", d:"它们来了你能赶走吗？", opts:["完全可以","大部分能","一半一半","很少能","完全不能"]},
+    {q:"你因怕出现这些想法而回避某些场合吗？", d:"比如不敢碰门把手、不敢去公共厕所", opts:["从不回避","偶尔回避","经常回避","大部分回避","几乎不出门了"]},
+    {q:"每天花多长时间做仪式性行为？", d:"反复洗手、检查、数数、默念等", opts:["完全没有","每天少于1小时","1-3小时","3-8小时","超过8小时"]},
+    {q:"不做仪式行为时多焦虑？", d:"忍住不洗手、不检查的话", opts:["完全不焦虑","轻微焦虑","中等但能忍住","非常焦虑","完全受不了"]},
+    {q:"你多努力去减少仪式行为？", d:"试过今天少洗一次？", opts:["不需要减少","偶尔尝试","经常但失败","一直努力但少成功","放弃了"]},
+    {q:"你能控制住仪式行为吗？", d:"知道没必要但还是做了？", opts:["完全可以","大部分能","一半一半","很少能","完全不能"]},
+    {q:"你因仪式行为而回避事情吗？", d:"怕过程太久而不敢开始", opts:["从不回避","偶尔影响","经常影响","大部分被影响","什么都做不了"]}
+];
+function ocdResult(s) {
+    if (s<=7) return ["正常范围","没有明显强迫症状。偶尔有反复想法是正常的。","保持平常心。如果想法来了，试试\"顺其自然\"——注意到它，不纠缠，该干嘛干嘛。","🟢"];
+    if (s<=15) return ["轻度强迫倾向","有一定强迫倾向，偶尔困扰但总体正常。","关键不是\"消除\"，是学会跟它相处。方法：①不抗拒不分析 ②该做什么继续做 ③这就是\"顺其自然，为所当为\"。","🟡"];
+    if (s<=23) return ["中度强迫症状","对生活有了一定影响，可能经常感到疲惫。","你处在关键路口。建议①寻求专业CBT治疗 ②读醒悟疗法/森田疗法 ③有人从更严重走出来了，你也可以。","🟠"];
+    if (s<=31) return ["重度强迫症状","对生活影响较大。不是你的错，是可以改善的。","强烈建议寻求专业医生帮助。单靠自己很难，但通过专业治疗多数人能显著改善。","🔴"];
+    return ["极重度强迫症状","已显著影响日常功能，不要独自硬扛。","请尽快到三甲医院精神科就诊。很多比你更严重的人都恢复了，你只需要迈出第一步。","🔴"];
+}
+
+// ==================== GAD-7 焦虑症量表（临床标准版7题） ====================
+const anxQ = [
+    {q:"感到紧张、焦虑或烦躁", d:"在过去两周，你有多频繁被以下问题困扰？", opts:["完全没有","几天","过半的天数","几乎每天"]},
+    {q:"无法停止或控制担忧", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
+    {q:"对各种各样的事情担忧过多", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
+    {q:"很难放松下来", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
+    {q:"坐立不安，很难安静坐着", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
+    {q:"容易烦躁或易怒", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
+    {q:"感到害怕——好像可怕的事情即将发生", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]}
+];
+function anxResult(s) {
+    if (s<=4) return ["正常范围","无明显焦虑症状。","你的状态很好。保持正常生活节奏，注意劳逸结合就好。","🟢"];
+    if (s<=9) return ["轻度焦虑","有轻度焦虑倾向。可能偶尔感到紧张或担心。","轻度焦虑很常见。可以试试：①每天做几次深呼吸 ②规律运动 ③减少咖啡/茶摄入。如果持续超过两周且影响生活，建议关注。","🟡"];
+    if (s<=14) return ["中度焦虑","中度焦虑，对生活有一定影响。","建议：①到三甲医院心理科就诊评估 ②CBT认知行为疗法效果很好 ③此时靠自己调整可能比较困难，寻求专业帮助是明智的选择。","🟠"];
+    return ["重度焦虑","重度焦虑症状，需要引起重视。","请尽快到三甲医院精神科或心理科就诊。焦虑症是高度可治疗的，通过专业治疗（CBT+可能药物），绝大多数人能明显改善。这不是你软弱，是生病了，需要看医生。","🔴"];
+}
+
+// 组合
+const tests = {
+    ocd: { name:"强迫症测试", label:"🧠 强迫症 (Y-BOCS标准版)", questions: ocdQ, maxScore:4, resultFn: ocdResult },
+    anxiety: { name:"焦虑症测试", label:"💧 焦虑症 (GAD-7标准版)", questions: anxQ, maxScore:3, resultFn: anxResult }
+};
+
+let currentTest = null; // 'ocd' or 'anxiety'
+let idx = 0, ans = [];
+let savedResults = {}; // 保存两次测试的结果用于对比
+
+function startTest(type) {
+    currentTest = type;
+    const t = tests[type];
+    ans = new Array(t.questions.length).fill(-1);
+    idx = 0;
+    document.getElementById('selectArea').classList.add('hidden');
+    document.getElementById('qArea').classList.remove('hidden');
+    document.getElementById('testTypeLabel').textContent = t.label;
+    renderQ();
+}
+
+function renderQ() {
+    const t = tests[currentTest];
+    const q = t.questions[idx];
+    document.getElementById('qNum').textContent = `第 ${idx+1}/${t.questions.length} 题`;
+    document.getElementById('pg').style.width = `${(idx/t.questions.length)*100}%`;
+    document.getElementById('qTitle').textContent = q.q;
+    document.getElementById('qDesc').textContent = q.d;
+
+    let h = '';
+    q.opts.forEach((txt, j) => {
+        const sel = ans[idx] === j ? 'selected' : '';
+        const label = t.maxScore === 4 ? ['0分','1分','2分','3分','4分'][j] : ['0分','1分','2分','3分'][j];
+        h += `<div class="opt-item ${sel}" onclick="pick(${j})">${txt} <span style="float:right;color:#bbb;font-size:12px">${label}</span></div>`;
+    });
+    document.getElementById('qOpts').innerHTML = h;
+    document.getElementById('nextBtn').disabled = (ans[idx] === -1);
+    document.getElementById('nextBtn').textContent = (idx === t.questions.length-1) ? '查看结果' : '下一题';
+}
+
+function pick(oi) {
+    ans[idx] = oi;
+    renderQ();
+    document.getElementById('nextBtn').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function nextQ() {
+    if (ans[idx] === -1) return;
+    const t = tests[currentTest];
+    if (idx < t.questions.length - 1) {
+        idx++;
+        renderQ();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    let s = 0;
+    for (let i = 0; i < ans.length; i++) if (ans[i] >= 0) s += ans[i];
+    document.getElementById('qArea').classList.add('hidden');
+    document.getElementById('rArea').classList.remove('hidden');
+    document.getElementById('pg').style.width = '100%';
+
+    const t = tests[currentTest];
+    const [title, desc, advice, icon] = t.resultFn(s);
+    document.getElementById('rScore').textContent = s;
+    document.getElementById('rTitle').textContent = icon + ' ' + title;
+    document.getElementById('rDesc').textContent = desc;
+    document.getElementById('rCard').innerHTML = '<strong>给你的话：</strong><br><br>' + advice;
+
+    // 保存结果
+    savedResults[currentTest] = s;
+    // 渲染可视化
+    renderChart();
+}
+
+function backToSelect() {
+    currentTest = null;
+    document.getElementById('rArea').classList.add('hidden');
+    document.getElementById('selectArea').classList.remove('hidden');
+    document.getElementById('pg').style.width = '0%';
+}
+
+function retake() {
+    // 重测时清除当前测试的存档
+    const type = currentTest;
+    delete savedResults[type];
+    backToSelect();
+    startTest(type);
+}
+
+// 渲染柱状图
+function renderChart() {
+    const items = [];
+    // 强迫思维 (Q1-5)
+    if (savedResults.ocd !== undefined) {
+        // 计算强迫思维分和强迫行为分
+        // 但这里我们直接用总分，因为Y-BOCS总分就是10-40的范围
+        const maxOcd = 40;
+        items.push({ label:'强迫症', score: savedResults.ocd, max: maxOcd, color: '#7c4dff' });
+    }
+    if (savedResults.anxiety !== undefined) {
+        const maxAnx = 21;
+        items.push({ label:'焦虑症', score: savedResults.anxiety, max: maxAnx, color: '#00bcd4' });
+    }
+
+    if (items.length === 0) { document.getElementById('chartArea').classList.add('hidden'); return; }
+    document.getElementById('chartArea').classList.remove('hidden');
+
+    let html = '';
+    items.forEach(item => {
+        const pct = Math.min(100, (item.score / item.max) * 100);
+        const barColor = pct > 70 ? '#ef5350' : pct > 40 ? '#ff9800' : item.color;
+        html += `<div class="chart-row">
+            <div class="chart-label">${item.label}</div>
+            <div class="chart-bar-bg">
+                <div class="chart-bar-fill" style="width:${pct}%;background:${barColor}">
+                    <span>${item.score}</span>
+                </div>
+            </div>
+            <div class="chart-max">/${item.max}</div>
+        </div>`;
+    });
+    document.getElementById('chartContent').innerHTML = html;
+}
+
+function copyLink() {
+    const u = window.location.href;
+    if (navigator.clipboard) { navigator.clipboard.writeText(u).then(()=>alert('链接已复制！')); }
+    else { prompt('复制链接：', u); }
+}
+
+document.addEventListener('keydown', e => { if (e.key==='Enter' && !document.getElementById('nextBtn').disabled) nextQ(); });
+</script>
+</body>
+</html>
