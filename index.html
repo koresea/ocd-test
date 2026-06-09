@@ -1,302 +1,1165 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>强迫症 & 焦虑症 自评测试</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
-            background: linear-gradient(135deg, #f0f2f5 0%, #e8ecf1 100%);
-            min-height: 100vh; padding: 20px;
-        }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); padding: 28px 20px; }
-        h1 { font-size: 22px; text-align: center; } .sub { text-align: center; color: #999; font-size: 13px; margin-bottom: 20px; }
-        .tip { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #8d6b00; margin-bottom: 20px; line-height: 1.6; }
-        .bar { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
-        .bar div { height: 100%; background: #7c4dff; border-radius: 2px; transition: width 0.3s; width: 0%; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脱扣 - 强迫症·焦虑症 自评工具</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f0ff; color: #333; line-height: 1.6; }
 
-        /* 类型选择 */
-        .type-select { display: flex; gap: 12px; margin-bottom: 24px; }
-        .type-btn {
-            flex: 1; padding: 14px; border: 2px solid #e0e0e0; border-radius: 12px;
-            text-align: center; cursor: pointer; transition: 0.2s; font-size: 15px; font-weight: 600;
-        }
-        .type-btn:hover { border-color: #b388ff; background: #f8f6ff; }
-        .type-btn.active { border-color: #7c4dff; background: #f3edff; color: #7c4dff; }
+  .topbar { background: #fff; border-bottom: 1px solid #eee; padding: 12px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .topbar .logo { font-size: 18px; font-weight: 700; color: #7c4dff; cursor: pointer; }
+  .topbar .nav { margin-left: auto; display: flex; gap: 16px; align-items: center; }
+  .topbar .nav a { color: #666; text-decoration: none; font-size: 14px; cursor: pointer; }
+  .topbar .nav a:hover { color: #7c4dff; }
 
-        .qn { font-size: 12px; color: #bbb; margin-bottom: 4px; }
-        .qt { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-        .qd { font-size: 13px; color: #888; margin-bottom: 14px; }
-        .opts { display: flex; flex-direction: column; gap: 8px; }
-        .opt-item {
-            display: block; padding: 12px 16px; border: 2px solid #e8e8e8;
-            border-radius: 10px; cursor: pointer; font-size: 15px; transition: 0.2s;
-        }
-        .opt-item:hover { border-color: #b388ff; background: #f8f6ff; }
-        .opt-item.selected { border-color: #7c4dff; background: #f3edff; font-weight: 600; }
+  .page { display: none; min-height: calc(100vh - 53px); }
+  .page.active { display: block; }
 
-        .btn-wrap { margin-top: 16px; }
-        .btn {
-            display: block; width: 100%; padding: 14px; border: none; border-radius: 10px;
-            font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s;
-        }
-        .btn-primary { background: #7c4dff; color: #fff; }
-        .btn-primary:hover { background: #651fff; }
-        .btn-primary:disabled { background: #d9d9d9; color: #aaa; cursor: not-allowed; }
-        .btn-secondary { background: #f0f0f0; color: #555; }
-        .btn-secondary:hover { background: #e0e0e0; }
+  #home { text-align: center; padding: 60px 20px; }
+  #home h1 { font-size: 28px; color: #333; margin-bottom: 12px; }
+  #home .subtitle { color: #888; font-size: 15px; margin-bottom: 40px; }
+  .cards { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .card { background: #fff; border-radius: 16px; padding: 32px 24px; width: 240px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .card:hover { border-color: #7c4dff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(124,77,255,0.15); }
+  .card .icon { font-size: 40px; margin-bottom: 16px; }
+  .card h3 { font-size: 17px; margin-bottom: 8px; color: #333; }
+  .card p { font-size: 13px; color: #888; }
 
-        .result-wrap { }
-        .result-header { text-align: center; margin-bottom: 20px; }
-        .score { font-size: 48px; font-weight: 800; color: #7c4dff; }
-        .score-label { font-size: 14px; color: #888; }
-        .r-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-        .r-desc { font-size: 14px; color: #555; line-height: 1.8; margin-bottom: 12px; }
-        .r-card { background: #f9f9fb; border-radius: 12px; padding: 18px; margin-bottom: 16px; text-align: left; font-size: 14px; line-height: 1.8; border: 1px solid #eee; }
-        .hidden { display: none; }
-        .share { background: #f3edff; border-radius: 10px; padding: 14px; margin-bottom: 12px; text-align: center; cursor: pointer; }
-        .share p { color: #7c4dff; font-weight: 500; font-size: 14px; }
-        .back-btn { margin-top: 12px; }
-        .chart-wrap { background: #f9f9fb; border-radius: 12px; padding: 18px; margin-bottom: 16px; border: 1px solid #eee; }
-        .chart-wrap h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #333; }
-        .chart-row { display: flex; align-items: center; margin-bottom: 10px; gap: 8px; }
-        .chart-label { font-size: 13px; font-weight: 500; min-width: 80px; color: #555; }
-        .chart-bar-bg { flex: 1; height: 22px; background: #f0f0f0; border-radius: 11px; overflow: hidden; }
-        .chart-bar-fill { height: 100%; border-radius: 11px; transition: width 0.8s ease; display: flex; align-items: center; padding-left: 8px; }
-        .chart-bar-fill span { font-size: 11px; color: #fff; font-weight: 600; }
-        .chart-max { font-size: 12px; color: #aaa; min-width: 40px; text-align: right; }
-        footer { text-align: center; font-size: 12px; color: #ccc; margin-top: 20px; padding-top: 14px; border-top: 1px solid #eee; }
-    </style>
+  #test-page { max-width: 640px; margin: 0 auto; padding: 30px 20px; }
+  .progress-wrap { margin-bottom: 24px; }
+  .progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #7c4dff, #b47cff); transition: width 0.3s; border-radius: 3px; }
+  .progress-text { font-size: 12px; color: #aaa; margin-top: 6px; }
+  .question-card { background: #fff; border-radius: 16px; padding: 32px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .q-number { font-size: 13px; color: #7c4dff; font-weight: 600; margin-bottom: 8px; }
+  .q-text { font-size: 16px; font-weight: 500; margin-bottom: 24px; line-height: 1.6; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt { padding: 14px 16px; border: 2px solid #eee; border-radius: 12px; cursor: pointer; transition: all 0.15s; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+  .opt:hover { border-color: #d4bfff; background: #faf5ff; }
+  .opt.selected { border-color: #7c4dff; background: #f5f0ff; }
+  .opt .opt-score { background: #f0ebff; color: #7c4dff; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 20px; min-width: 44px; text-align: center; }
+  .opt.selected .opt-score { background: #7c4dff; color: #fff; }
+  .btn-wrap { margin-top: 28px; display: flex; gap: 12px; }
+  .btn { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-primary { background: #7c4dff; color: #fff; }
+  .btn-primary:hover { background: #6a3de6; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-secondary { background: #f5f5f5; color: #666; }
+  .btn-secondary:hover { background: #eee; }
+
+  #result-page { max-width: 640px; margin: 0 auto; padding: 30px 20px; }
+  .result-hero { background: #fff; border-radius: 16px; padding: 32px 24px; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .result-score-big { font-size: 64px; font-weight: 800; color: #7c4dff; line-height: 1; margin: 16px 0; }
+  .result-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .result-desc { font-size: 14px; color: #888; line-height: 1.8; }
+  .result-advice { background: #faf5ff; border-radius: 12px; padding: 20px; margin-top: 20px; text-align: left; font-size: 14px; line-height: 1.8; color: #555; }
+  .result-advice strong { color: #7c4dff; }
+  .share-btns { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .share-btn { padding: 8px 16px; font-size: 13px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; color: #666; }
+  .share-btn:hover { border-color: #7c4dff; color: #7c4dff; }
+
+  .next-cards { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .next-card { background: #fff; border-radius: 14px; padding: 20px; display: flex; align-items: center; gap: 16px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .next-card:hover { border-color: #7c4dff; transform: translateX(4px); }
+  .next-card .nc-icon { font-size: 32px; min-width: 44px; text-align: center; }
+  .next-card .nc-body h4 { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 4px; }
+  .next-card .nc-body p { font-size: 13px; color: #888; }
+
+  #record-page { max-width: 640px; margin: 0 auto; padding: 30px 20px; }
+  .record-today { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .record-today h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .record-field { margin-bottom: 20px; }
+  .record-field label { display: block; font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; }
+  .record-field .field-hint { font-size: 12px; color: #bbb; margin-top: 6px; }
+  .count-wrap { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .count-btn { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #eee; background: #fff; font-size: 20px; font-weight: 700; cursor: pointer; transition: all 0.15s; color: #999; display: flex; align-items: center; justify-content: center; }
+  .count-btn:hover { border-color: #7c4dff; color: #7c4dff; }
+  .count-num { font-size: 28px; font-weight: 700; color: #7c4dff; min-width: 60px; text-align: center; }
+  .score-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .score-btn { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #eee; background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s; color: #999; }
+  .score-btn:hover { border-color: #7c4dff; color: #7c4dff; }
+  .score-btn.selected { background: #7c4dff; color: #fff; border-color: #7c4dff; }
+  .duration-wrap { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .duration-wrap input { width: 80px; padding: 8px 12px; font-size: 18px; font-weight: 600; text-align: center; border: 2px solid #eee; border-radius: 10px; }
+  .duration-wrap span { font-size: 14px; color: #888; }
+  .btn-save { margin-top: 20px; padding: 12px 32px; background: #7c4dff; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn-save:hover { background: #6a3de6; }
+  .record-note { width: 100%; border: 2px solid #eee; border-radius: 12px; padding: 12px; font-size: 14px; resize: vertical; min-height: 80px; font-family: inherit; margin-top: 12px; }
+  .record-note:focus { outline: none; border-color: #7c4dff; }
+
+  .chart-section { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .chart-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .chart-canvas-wrap { width: 100%; overflow-x: auto; }
+  canvas { width: 100% !important; height: 240px !important; }
+
+  .history-list { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .history-list h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+  .history-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; gap: 12px; }
+  .history-item:last-child { border-bottom: none; }
+  .hi-date { font-size: 13px; color: #aaa; min-width: 80px; }
+  .hi-severity { font-size: 18px; font-weight: 700; min-width: 44px; text-align: center; }
+  .hi-count { font-size: 12px; color: #999; min-width: 40px; text-align: center; }
+  .hi-dur { font-size: 12px; color: #999; min-width: 50px; text-align: center; }
+  .hi-note { font-size: 13px; color: #888; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hi-delete { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 4px 8px; }
+  .hi-delete:hover { color: #ef5350; }
+
+  .data-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .data-btn { padding: 8px 16px; font-size: 13px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; color: #666; }
+  .data-btn:hover { border-color: #7c4dff; color: #7c4dff; }
+
+  .data-notice { background: #fff8e1; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #f57c00; margin-top: 16px; line-height: 1.8; }
+
+  #story-page { max-width: 720px; margin: 0 auto; padding: 30px 20px; }
+  .story-hero { background: #fff; border-radius: 16px; padding: 32px 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .story-hero h2 { font-size: 22px; color: #333; margin-bottom: 8px; }
+  .story-hero .story-meta { font-size: 13px; color: #aaa; margin-bottom: 20px; }
+  .story-content { font-size: 15px; line-height: 2; color: #555; }
+  .story-content p { margin-bottom: 16px; }
+  .story-content strong { color: #333; }
+  .story-content .highlight { background: #f5f0ff; padding: 2px 6px; border-radius: 4px; color: #7c4dff; }
+
+  #handbook-page { max-width: 720px; margin: 0 auto; padding: 30px 20px; }
+  .hb-hero { background: #fff; border-radius: 16px; padding: 32px 24px; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .hb-hero h2 { font-size: 22px; color: #333; margin-bottom: 8px; }
+  .hb-hero .hb-sub { color: #888; font-size: 14px; margin: 12px 0; }
+  .hb-toc { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .hb-toc h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #333; }
+  .hb-toc-item { padding: 10px 0; border-bottom: 1px solid #f5f5f5; cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
+  .hb-toc-item:last-child { border-bottom: none; }
+  .hb-toc-item:hover .hb-toc-title { color: #7c4dff; }
+  .hb-toc-num { font-size: 13px; font-weight: 700; color: #7c4dff; min-width: 28px; }
+  .hb-toc-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 2px; }
+  .hb-toc-desc { font-size: 12px; color: #aaa; }
+  .hb-chapter { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); display: none; }
+  .hb-chapter.active { display: block; }
+  .hb-chapter h3 { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 16px; }
+  .hb-chapter p { font-size: 14px; line-height: 2; color: #555; margin-bottom: 12px; }
+  .hb-chapter .hb-note { background: #fff8e1; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #f57c00; margin-top: 12px; }
+  .hb-back { display: inline-block; margin-top: 16px; padding: 8px 20px; background: #f5f0ff; color: #7c4dff; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .hb-back:hover { background: #ede7ff; }
+
+  .disclaimer { max-width: 640px; margin: 30px auto; padding: 0 20px; font-size: 12px; color: #ccc; text-align: center; line-height: 1.8; }
+
+  @media (max-width: 600px) {
+    .cards { flex-direction: column; align-items: center; }
+    .card { width: 100%; max-width: 320px; }
+    #home { padding: 40px 16px; }
+    #home h1 { font-size: 22px; }
+    .result-score-big { font-size: 48px; }
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.3s ease; }
+
+  /* 登录弹窗 */
+  #loginModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; align-items: center; justify-content: center; }
+  #loginModal.active { display: flex; }
+  .login-box { background: #fff; border-radius: 16px; padding: 32px 28px; width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); position: relative; }
+  .login-box h3 { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 20px; }
+  .login-box input { width: 100%; padding: 10px 14px; font-size: 14px; border: 2px solid #eee; border-radius: 10px; outline: none; box-sizing: border-box; margin-bottom: 14px; }
+  .login-box input:focus { border-color: #7c4dff; }
+  .login-err { font-size: 13px; color: #e53935; margin-bottom: 12px; display: none; }
+  .login-msg { font-size: 13px; color: #4caf50; text-align: center; display: none; margin-top: 8px; }
+  .btn-login { width: 100%; padding: 12px; background: #7c4dff; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+  .btn-login:hover { background: #6a3de6; }
+  .btn-register { width: 100%; padding: 10px; background: #f5f0ff; color: #7c4dff; border: 2px solid #7c4dff; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 16px; }
+  .btn-register:hover { background: #ede7ff; }
+  .login-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 20px; color: #ccc; cursor: pointer; }
+  .login-close:hover { color: #999; }
+</style>
 </head>
 <body>
-<div class="container">
-    <h1>心理健康自评测试</h1>
-    <p class="sub">基于三甲医院临床标准量表 · 仅供参考不构成诊断</p>
-    <div class="tip">选择你想测试的项目，完成后可换另一个测试。</div>
 
-    <div class="bar"><div id="pg"></div></div>
+<div class="topbar">
+  <div class="logo" onclick="goHome()">🧠 脱扣</div>
+  <div class="nav">
+    <a onclick="goHome()">首页</a>
+    <a onclick="showPage('record-page')">情绪记录</a>
+    <a onclick="showPage('story-page')">我的经历</a>
+    <a onclick="showPage('handbook-page')">康复手册</a>
+    <a id="loginNavBtn" onclick="showLoginModal()" style="color:#7c4dff;font-weight:600;display:;">登录</a>
+    <span id="userNavInfo" style="display:none;font-size:13px;color:#7c4dff;"></span>
+    <a id="logoutNavBtn" onclick="logout()" style="display:none;font-size:13px;color:#999;cursor:pointer;">退出</a>
+  </div>
+</div>
 
-    <!-- 测试选择 -->
-    <div id="selectArea">
-        <p style="font-size:14px;color:#888;margin-bottom:12px;">请选择测试项目：</p>
-        <div class="type-select">
-            <div class="type-btn" onclick="startTest('ocd')">
-                🧠 强迫症测试<br>
-                <span style="font-size:12px;font-weight:400;color:#999;">Y-BOCS 标准版 · 10题</span>
-            </div>
-            <div class="type-btn" onclick="startTest('anxiety')">
-                💧 焦虑症测试<br>
-                <span style="font-size:12px;font-weight:400;color:#999;">GAD-7 标准版 · 7题</span>
-            </div>
-        </div>
+<div id="home" class="page active">
+  <h1>🧠 脱扣 · 心理健康自评</h1>
+  <p class="subtitle">基于三甲医院临床标准量表 · 免费 · 保密 · 仅供参考</p>
+  <div class="cards" style="margin-top:30px;">
+    <div class="card" onclick="startTest('ocd')">
+      <div class="icon">🔵</div>
+      <h3>强迫症自评</h3>
+      <p>Y-BOCS标准版 · 10题 · 临床常用</p>
+    </div>
+    <div class="card" onclick="startTest('anxiety')">
+      <div class="icon">🟢</div>
+      <h3>焦虑症自评</h3>
+      <p>GAD-7标准版 · 7题 · 三甲医院常用</p>
+    </div>
+  </div>
+  <div style="margin-top:30px;">
+    <a href="#" onclick="showPage('record-page');return false;" style="color:#7c4dff;font-size:14px;text-decoration:none;">📊 查看我的情绪记录 →</a>
+  </div>
+</div>
+
+<div id="test-page" class="page">
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+    <div class="progress-text" id="progText"></div>
+  </div>
+  <div class="question-card" id="qCard">
+    <div class="q-number" id="qNum"></div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="qOpts"></div>
+    <div class="btn-wrap">
+      <button class="btn btn-secondary" id="prevBtn" onclick="prev()">上一题</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="next()" disabled>下一题</button>
+    </div>
+  </div>
+</div>
+
+<div id="result-page" class="page">
+  <div class="result-hero fade-in" id="resultHero"></div>
+  <div class="next-cards fade-in" id="nextCards"></div>
+</div>
+
+<div id="record-page" class="page">
+  <div class="record-today">
+    <h3>📅 今天的记录</h3>
+    <p style="font-size:13px;color:#aaa;margin-bottom:20px;">记录三个维度，坚持记录能看到自己的康复曲线</p>
+
+    <div class="record-field">
+      <label>1. 今天出现了几次？</label>
+      <div class="count-wrap">
+        <button class="count-btn" onclick="changeCount(-1)">−</button>
+        <span class="count-num" id="recordCount">0</span>
+        <button class="count-btn" onclick="changeCount(1)">+</button>
+        <span style="font-size:13px;color:#aaa;margin-left:8px;">次</span>
+      </div>
+      <div class="field-hint">强迫思维/焦虑情绪出现的次数（0次也正常）</div>
     </div>
 
-    <!-- 问卷 -->
-    <div id="qArea" class="hidden">
-        <div id="testTypeLabel" style="font-size:13px;color:#7c4dff;font-weight:600;margin-bottom:8px;"></div>
-        <p class="qn" id="qNum"></p>
-        <div class="qt" id="qTitle"></div>
-        <div class="qd" id="qDesc"></div>
-        <div class="opts" id="qOpts"></div>
-        <div class="btn-wrap"><button class="btn btn-primary" id="nextBtn" onclick="nextQ()" disabled>下一题</button></div>
+    <div class="record-field">
+      <label>2. 平均每次多严重？</label>
+      <div class="score-selector" id="severitySelector" style="margin-top:8px;"></div>
+      <div class="field-hint">1=几乎没感觉，10=非常痛苦</div>
     </div>
 
-    <!-- 结果 -->
-    <div id="rArea" class="hidden result-wrap">
-        <div class="result-header">
-            <div class="score" id="rScore">0</div>
-            <div class="score-label">总分</div>
-        </div>
-        <div class="r-title" id="rTitle"></div>
-        <div class="r-desc" id="rDesc"></div>
-        <div class="chart-wrap" id="chartArea">
-            <h3>📊 综合评估</h3>
-            <div id="chartContent"></div>
-        </div>
-        <div class="r-card" id="rCard"></div>
-        <div class="share" onclick="copyLink()"><p>📤 分享给可能需要的人</p></div>
-        <div class="btn-wrap back-btn"><button class="btn btn-secondary" onclick="backToSelect()">返回选择其他测试</button></div>
-        <div class="btn-wrap"><button class="btn btn-secondary" onclick="retake()">重新测一次</button></div>
+    <div class="record-field">
+      <label>3. 平均每次持续多久？</label>
+      <div class="duration-wrap">
+        <input type="number" id="recordDuration" min="0" max="1440" value="0" style="width:80px;padding:8px 12px;font-size:18px;font-weight:600;text-align:center;border:2px solid #eee;border-radius:10px;">
+        <span style="font-size:14px;color:#888;">分钟</span>
+      </div>
+      <div class="field-hint">从开始感到不舒服，到慢慢平复</div>
     </div>
 
-    <footer>顺其自然，为所当为</footer>
+    <textarea class="record-note" id="recordNote" placeholder="可选：简单记录今天发生了什么、你的感受…"></textarea>
+    <br>
+    <button class="btn-save" onclick="saveRecord()">保存今天记录</button>
+    <span id="saveMsg" style="margin-left:12px;font-size:13px;color:#4caf50;"></span>
+  </div>
+  <div class="chart-section">
+    <h3>📈 我的康复曲线 <span style="font-size:12px;color:#aaa;font-weight:400;">（近30天）</span></h3>
+    <div class="chart-canvas-wrap">
+      <canvas id="trendChart"></canvas>
+    </div>
+    <p style="font-size:12px;color:#ccc;margin-top:8px;text-align:center;">三条曲线：紫色=次数 蓝色=程度 绿色=时长 · 坚持记录才有意义</p>
+  </div>
+  <div class="history-list">
+    <h3>📋 历史记录</h3>
+    <div id="historyList"><p style="color:#ccc;font-size:13px;">还没有记录，今天开始吧 😊</p></div>
+    <div class="data-actions">
+      <button class="data-btn" onclick="generateBackupLink()">🔗 生成备份链接</button>
+      <button class="data-btn" onclick="exportData()">📥 导出数据备份</button>
+      <button class="data-btn" onclick="document.getElementById('importFile').click()">📤 导入数据</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+  <div class="data-notice">
+    ⚠️ <strong>数据说明：</strong>你的所有记录保存在此浏览器的本地存储中。换设备或清缓存会丢失。<br>
+    ① 点"生成备份链接"→ 收藏链接到微信，换手机打开即恢复<br>
+    ② 登录后数据自动同步云端，换设备也不丢
+  </div>
+</div>
+
+<div id="story-page" class="page">
+  <div class="story-hero">
+    <h2>🌱 我的六年强迫症自愈经历</h2>
+    <div class="story-meta">分享者：一位高校老师 · 仅分享个人经历，不构成医疗建议</div>
+  </div>
+  <div class="story-content">
+    <p>我叫不出那是什么，但从高二开始，脑子里总有很多想法不停地冒出来。我会强迫自己把它们想完——不想完就难受、就焦虑。</p>
+    <p>一个想法刚结束，另一个又来了。我明明理性上知道"这件事不值得想这么久"，但感性的焦虑会驱使我去想通它。每次想完回头一看，大把时间已经过去了。</p>
+    <p>高一的时候我很刻苦，成绩能进全年级前100名。但高二开始，这些没完没了的想法把学习时间全挤掉了。我想把每个念头想通，结果正事一样都没做成。那种感觉很无力——<span class="highlight">你明明分得清哪些事该做、哪些是想不通的妄念，但焦虑上来的时候，你就分不清了</span>。</p>
+    <p>后面大概六年的时间，我都在跟这个东西较劲。慢慢我发现：<span class="highlight">每次我忍住不去想把那个念头想通，焦虑还在，但大脑好像会自己调整一点</span>。下一次，类似的念头再来，我没那么容易被它带走。就是这样一次又一次，慢慢走出来的。</p>
+    <p>后来我总结出来八个字：<strong>顺其自然，为所当为</strong>。不是"顺其自然躺着什么都不做"，而是——那些想不通的念头，让它就在那里，你去做你该做的事。</p>
+    <p>这个工具，就是我想对当年的自己、和对正在经历同样事情的人说的话——<strong>你不是一个人，这条路走得通。</strong></p>
+    <p style="text-align:center;margin-top:24px;color:#7c4dff;font-weight:600;">顺其自然，为所当为。</p>
+  </div>
+</div>
+
+<div id="handbook-page" class="page">
+  <div class="hb-hero">
+    <h2>📖 强迫症·焦虑症 康复指导手册</h2>
+    <p class="hb-sub">基于自愈经历 + 森田疗法 + 醒悟疗法核心方法</p>
+    <p style="font-size:13px;color:#aaa;">持续完善中 · 你可以根据自己的经历补充内容</p>
+  </div>
+
+  <!-- 目录 -->
+  <div class="hb-toc" id="hbToc">
+    <h3>📋 目录（点击阅读）</h3>
+    <div class="hb-toc-item" onclick="showChapter(1)">
+      <div class="hb-toc-num">01</div>
+      <div><div class="hb-toc-title">认识强迫症和焦虑症</div><div class="hb-toc-desc">它不是"想太多"，是大脑的刹车系统过敏了</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(2)">
+      <div class="hb-toc-num">02</div>
+      <div><div class="hb-toc-title">核心心法：顺其自然，为所当为</div><div class="hb-toc-desc">八个字浓缩六年经历，是康复的基石</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(3)">
+      <div class="hb-toc-num">03</div>
+      <div><div class="hb-toc-title">暴露练习：和焦虑做朋友</div><div class="hb-toc-desc">故意不去检查、故意接受不舒服</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(4)">
+      <div class="hb-toc-num">04</div>
+      <div><div class="hb-toc-title">思维记录：区分事实和想法</div><div class="hb-toc-desc">哪些是真实的问题，哪些是强迫在"骗你"</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(5)">
+      <div class="hb-toc-num">05</div>
+      <div><div class="hb-toc-title">日常应对策略</div><div class="hb-toc-desc">焦虑来了怎么办？具体可操作的步骤</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(6)">
+      <div class="hb-toc-num">06</div>
+      <div><div class="hb-toc-title">康复记录：看到自己在好转</div><div class="hb-toc-desc">用数据让自己相信"我真的在变好"</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(7)">
+      <div class="hb-toc-num">07</div>
+      <div><div class="hb-toc-title">焦虑的管理方法</div><div class="hb-toc-desc">焦虑驱动一切，学会和它打交道</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(8)">
+      <div class="hb-toc-num">08</div>
+      <div><div class="hb-toc-title">常见误区和陷阱</div><div class="hb-toc-desc">"万一呢""再想最后一次"——这些坑很多人反复跳</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(9)">
+      <div class="hb-toc-num">09</div>
+      <div><div class="hb-toc-title">给家人和朋友的建议</div><div class="hb-toc-desc">你不需要"治好他"，你只需要不添乱</div></div>
+    </div>
+    <div class="hb-toc-item" onclick="showChapter(10)">
+      <div class="hb-toc-num">10</div>
+      <div><div class="hb-toc-title">复发预防与长期维护</div><div class="hb-toc-desc">好了之后怎么办？会复发吗？</div></div>
+    </div>
+  </div>
+
+  <!-- 各章内容 -->
+  <div id="hbChapters">
+    <div class="hb-chapter" id="ch1">
+      <h3>第一章：认识强迫症和焦虑症</h3>
+      <p>强迫症不是"想太多"，也不是"意志力不够"。它是一种大脑的刹车系统过敏了——那些该被忽略的信号，被大脑当成了紧急警报。</p>
+      <p>很多人都觉得：我知道这个想法不合理，但我控制不住。这是对的。正因为你控制不了，所以它才叫强迫症。如果你能控制，那就叫"想开点就好了"——但你已经试过了，没用。</p>
+      <p>焦虑症和强迫症是一对"双胞胎"。强迫让你反复想，焦虑让你害怕不去想。焦虑是驱动的那个引擎，强迫是引擎带动的那个轮子。所以很多时候它们是并发的。</p>
+      <p>接受"这是生理机制的问题，不是我的错"，是康复的第一步。不是你不够坚强，是你的大脑暂时被卡住了。</p>
+      <div class="hb-note">💡 你可以在这里补充自己的感受——你当年是怎么意识到"这不是我意志力的问题"的？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch2">
+      <h3>第二章：核心心法——顺其自然，为所当为</h3>
+      <p>这八个字是整个康复过程的全部精华。六年走出来的东西，最后就浓缩成这八个字。</p>
+      <p><strong>顺其自然：</strong>让那些想法在那里，不赶它走，也不跟它走。它来了就来了，你知道它来了，然后你继续做你的事。不抗拒也不认同。</p>
+      <p><strong>为所当为：</strong>做你该做的事。去上课、去吃饭、去和人说笑。不要等"舒服了再去生活"。带着不舒服，去做事。</p>
+      <p>这两句是一体的。没有顺其自然，为所当为就变成"硬撑"。没有为所当为，顺其自然就变成"躺平"。</p>
+      <p>你不是在消灭症状。你是在学会带着它生活。当你不把它当成"天大的问题"时，它就慢慢变小了。</p>
+      <div class="hb-note">💡 你可以补充你对这八个字的理解——你在哪一天突然"悟到"的？当时发生了什么？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch3">
+      <h3>第三章：暴露练习——和焦虑做朋友</h3>
+      <p>暴露练习是强迫症认知行为治疗（CBT）最核心的技术，也是"顺其自然，为所当为"的具体操作方法。</p>
+      <p><strong>怎么做：</strong>故意不去检查、故意不把那个念头想通、故意接受不舒服。比如：锁了门就离开，不回去检查。脏了的东西不马上去洗。念头来了，不把它想通。</p>
+      <p>你会很难受。几十秒、几分钟，焦虑达到高峰。但如果你能撑过去，你会发现——焦虑会自己降下来。不是因为你做了什么，只是因为时间过去了。</p>
+      <p><strong>渐进原则：</strong>从最不难受的开始练习。比如：如果最怕的是"没锁门"（焦虑10分），可以先练"碰过门把手不洗手"（焦虑3分）。从3分练起，再慢慢上到10分。</p>
+      <p>每次忍住不去做那个行为，你的大脑就学会了一件事：这个信号不用拉警报。忍一次，变好一点点。</p>
+      <div class="hb-note">💡 你可以补充你当年是怎么"暴露"的——你无意识对自己做了什么练习？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch4">
+      <h3>第四章：思维记录——区分事实和想法</h3>
+      <p>强迫症最大的陷阱是：你分不清"真实的问题"和"强迫抛给你的问题"。</p>
+      <p><strong>三个问题帮你区分：</strong></p>
+      <p>① <strong>这个想法有事实根据吗？</strong> 还是只是一种"感觉"？</p>
+      <p>② <strong>即使它真的发生了，概率有多大？</strong> 你检查十次门没锁的可能性有多大？</p>
+      <p>③ <strong>别人遇到同样的情况会怎么做？</strong> 你的朋友碰到这个情况会花多少时间去想？</p>
+      <p>太复杂的话，记住这一条就够了——<strong>你理性上已经知道它不合理了。</strong> 如果你还要问"它到底合理不合理"，那它就是强迫的念头。合理的事情不需要犹豫。</p>
+      <div class="hb-note">💡 你可以补充你自己区分"正常想法"和"强迫想法"的经验——你是怎么练出来的？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch5">
+      <h3>第五章：日常应对策略</h3>
+      <p>焦虑/强迫念头来了，按这个顺序做：</p>
+      <p><strong>第一步：识别。</strong> "哦，它来了。" → 不要慌，认出它就好。</p>
+      <p><strong>第二步：命名。</strong> "这是强迫思维/焦虑发作。" → 给它贴个标签，它就不是"可怕的东西"，只是"老毛病"。</p>
+      <p><strong>第三步：不行动。</strong> 不做检查、不去想通、不去逃避。就让它在那里。</p>
+      <p><strong>第四步：转移。</strong> 去做别的事。不需要很复杂——喝水、站起来走两步、回一条消息、看一眼窗外。任何事都行。</p>
+      <p><strong>第五步：等。</strong> 等焦虑自己降下来。不需要你做任何事，它会自己走的。给它时间。</p>
+      <p>五步练熟了，整个过程可以缩短到十几秒。你不需要每次都成功，只要有一次"我忍住了"，就是一次胜利。</p>
+      <div class="hb-note">💡 你可以补充你当年用得最顺手的"转移方法"是什么？什么事最容易帮你从念头里出来？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch6">
+      <h3>第六章：康复记录——看到自己在好转</h3>
+      <p>康复是一个很慢的过程。慢到你可能感觉不到自己在变好。这就是为什么要做记录。</p>
+      <p>这个工具提供了三个维度的记录工具（等你补充好信息后我们会逐步实现）：</p>
+      <p><strong>① 出现次数：</strong> 每天记下强迫/焦虑来了几次。今天8次，一周后7次——次数下降就是进步。</p>
+      <p><strong>② 严重程度：</strong> 每次打分1-10。从8分降到5分——强度下降就是进步。</p>
+      <p><strong>③ 持续时间：</strong> 每次来了多久才过去。从2小时降到30分钟——时间缩短就是进步。</p>
+      <p>你不需要三个维度都记。选一个最简单的开始，比如每天睡前记一下"今天最难受的时候是几分"。一个月后回头看，你会看到一条下降的曲线。这条曲线不是幻觉，是你一步步走出来的证据。</p>
+      <p>这就是我在康复时最缺的东西——如果有人告诉我"你已经在好转了"，我会少很多焦虑。这个记录工具就是用来干这个的。</p>
+      <div class="hb-note">💡 你可以补充——你当时最想看到什么数据？什么信号会让你觉得"我确实在变好"？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch7">
+      <h3>第七章：焦虑的管理方法</h3>
+      <p>焦虑是强迫的燃料。控制了焦虑，强迫就烧不起来。</p>
+      <p><strong>理解焦虑的曲线：</strong> 焦虑不是一直上升的，它会到顶然后自己降下来。像一个抛物线——你不做任何事，它也会自己回落。你要做的只是"撑过高峰"。</p>
+      <p><strong>常见的"火上浇油"行为：</strong></p>
+      <p>① 反复确认（再去检查一次） → 短期缓解，长期恶化</p>
+      <p>② 寻求安慰（问别人"没事吧"） → 同上</p>
+      <p>③ 回避场景（不去可能触发焦虑的地方） → 越躲越怕</p>
+      <p><strong>正确的做法：</strong> 让焦虑在那里，不去管它。你越不管它，它越没劲。你越跟它较劲，它越来劲。这就是"顺其自然"的实操版。</p>
+      <div class="hb-note">💡 你可以补充——你当年觉得最有效的"降焦虑"方式是什么？哪怕只是一个小动作？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch8">
+      <h3>第八章：常见误区和陷阱</h3>
+      <p><strong>"再想最后一次我就放心了"</strong> → 没有最后一次。每一次"最后一次"都会变成下一次"第一次"。</p>
+      <p><strong>"万一它真的发生了呢？"</strong> → 这是一个不能赢的辩论。概率再小，你不能证明它100%不会发生。所以不要证明，直接说"发生了再说"。</p>
+      <p><strong>"等我好了我就去……"</strong> → 这是一个陷阱。康复不是"先病好再生活"，是"先活着，病慢慢就好了"。</p>
+      <p><strong>"为什么别人没有这个症状？"</strong> → 每个人都有自己的问题。你的不比别人的难，别人的也不比你的轻松。比谁来比去没有意义。</p>
+      <p><strong>"药有用吗？"</strong> → 药对很多人有效，但也不是对所有人。不要拒绝药物，也不要神话药物。工具而已，用不用、用哪个，你自己试了才知道。</p>
+      <div class="hb-note">💡 你可以补充——你当年经常掉进哪一个坑？是怎么爬出来的？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch9">
+      <h3>第九章：给家人和朋友的建议</h3>
+      <p>如果你身边有强迫症或焦虑症的人，记住最重要的三条：</p>
+      <p><strong>第一：别对他说"你想开点就好了"。</strong> 他能想开早就想开了。这句话只会让他觉得"你不理解我"。</p>
+      <p><strong>第二：别帮他做检查和确认。</strong> "你帮我看看门锁了没有"——不要帮他看。越帮，他越依赖这个"确认回路"。</p>
+      <p><strong>第三：陪着他，但不要替他。</strong> 他难受的时候，陪在身边就是最大的帮助。不需要说话，不需要给建议，只需要说"我知道你很难受，我在这儿"。</p>
+      <p>康复是他自己的事，但支持是你能做的事。你不需要"治好他"，你只需要不添乱、不放弃。</p>
+      <div class="hb-note">💡 你可以补充——你当时最希望家人怎么对你？最不希望他们做什么？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+
+    <div class="hb-chapter" id="ch10">
+      <h3>第十章：复发预防与长期维护</h3>
+      <p>你不一定会复发，但要有"就算复发了也不怕"的心态。</p>
+      <p><strong>康复后的状态是什么？</strong> 不是"再也不会焦虑了"，而是"焦虑来了，我知道怎么处理"。</p>
+      <p><strong>压力大的时候，症状可能回来。</strong> 这很正常。就像感冒——好了之后着凉还会再犯。但你已经有免疫力了，不会像第一次那样严重。</p>
+      <p><strong>维护的方法很简单：</strong></p>
+      <p>① 保持记录习惯（哪怕一周一次）</p>
+      <p>② 压力大的时候有意识地用"五步法"</p>
+      <p>③ 不要等严重了再干预——有苗头就开始练习</p>
+      <p>④ 该去医院就去医院，不丢人</p>
+      <p>你花了六年学会的东西，不会丢的。它会变成你身体里的一部分。就像学游泳学会了，就算几年不下水，掉进水里也不会淹死。</p>
+      <div class="hb-note">💡 你可以补充——你康复后的状态是什么样的？你怎么知道自己"真的好了"？</div>
+      <button class="hb-back" onclick="showToc()">← 返回目录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 登录弹窗 -->
+<div id="loginModal">
+  <div class="login-box">
+    <button class="login-close" onclick="hideLoginModal()">✕</button>
+    <h3>邮箱登录 / 注册</h3>
+    <input id="loginEmail" type="email" placeholder="邮箱">
+    <input id="loginPwd" type="password" placeholder="密码（至少6位）">
+    <div id="loginErr" class="login-err"></div>
+    <button class="btn-login" onclick="doLogin()">登  录</button>
+    <button class="btn-register" onclick="doRegister()">没有账号？注册</button>
+    <div id="loginMsg" class="login-msg"></div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  本工具仅供心理健康自助参考，所有量表结果不构成医学诊断。如有需要，请前往正规医院心理科就诊。<br>
+  顺其自然，为所当为。—— 脱扣
 </div>
 
 <script>
-// ==================== Y-BOCS 强迫症量表（临床标准版10题） ====================
-const ocdQ = [
-    {q:"每天花多长时间在反复出现的想法上？", d:"比如反复想到手不干净、门没锁、会不会出事等", opts:["完全没有","每天少于1小时","1-3小时","3-8小时","超过8小时"]},
-    {q:"这些反复出现的想法让你多痛苦？", d:"它们打扰你正常生活了吗？", opts:["完全不痛苦","轻微，还能正常","中等，经常被打扰","严重，很难正常","极其严重"]},
-    {q:"你多努力去抵抗这些想法？", d:"试过告诉自己别想了？", opts:["不需要抵抗","稍微努力就能","费劲才能压住","大部分压不住","完全抵抗不了"]},
-    {q:"你能控制这些想法吗？", d:"它们来了你能赶走吗？", opts:["完全可以","大部分能","一半一半","很少能","完全不能"]},
-    {q:"你因怕出现这些想法而回避某些场合吗？", d:"比如不敢碰门把手、不敢去公共厕所", opts:["从不回避","偶尔回避","经常回避","大部分回避","几乎不出门了"]},
-    {q:"每天花多长时间做仪式性行为？", d:"反复洗手、检查、数数、默念等", opts:["完全没有","每天少于1小时","1-3小时","3-8小时","超过8小时"]},
-    {q:"不做仪式行为时多焦虑？", d:"忍住不洗手、不检查的话", opts:["完全不焦虑","轻微焦虑","中等但能忍住","非常焦虑","完全受不了"]},
-    {q:"你多努力去减少仪式行为？", d:"试过今天少洗一次？", opts:["不需要减少","偶尔尝试","经常但失败","一直努力但少成功","放弃了"]},
-    {q:"你能控制住仪式行为吗？", d:"知道没必要但还是做了？", opts:["完全可以","大部分能","一半一半","很少能","完全不能"]},
-    {q:"你因仪式行为而回避事情吗？", d:"怕过程太久而不敢开始", opts:["从不回避","偶尔影响","经常影响","大部分被影响","什么都做不了"]}
-];
-function ocdResult(s) {
-    if (s<=7) return ["正常范围","没有明显强迫症状。偶尔有反复想法是正常的。","保持平常心。如果想法来了，试试\"顺其自然\"——注意到它，不纠缠，该干嘛干嘛。","🟢"];
-    if (s<=15) return ["轻度强迫倾向","有一定强迫倾向，偶尔困扰但总体正常。","关键不是\"消除\"，是学会跟它相处。方法：①不抗拒不分析 ②该做什么继续做 ③这就是\"顺其自然，为所当为\"。","🟡"];
-    if (s<=23) return ["中度强迫症状","对生活有了一定影响，可能经常感到疲惫。","你处在关键路口。建议①寻求专业CBT治疗 ②读醒悟疗法/森田疗法 ③有人从更严重走出来了，你也可以。","🟠"];
-    if (s<=31) return ["重度强迫症状","对生活影响较大。不是你的错，是可以改善的。","强烈建议寻求专业医生帮助。单靠自己很难，但通过专业治疗多数人能显著改善。","🔴"];
-    return ["极重度强迫症状","已显著影响日常功能，不要独自硬扛。","请尽快到三甲医院精神科就诊。很多比你更严重的人都恢复了，你只需要迈出第一步。","🔴"];
+// ===== Supabase 配置（需要你注册后填写）=====
+var SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+var SUPABASE_ANON_KEY = 'YOUR-ANON-KEY';
+var supabase = null;
+var currentUser = null;
+
+// ===== 初始化 Supabase =====
+function initSupabase() {
+  if (typeof supabase === 'object' && supabase !== null && supabase.auth) return;
+  try {
+    if (window.supabase && window.supabase.createClient) {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch(e) {}
 }
 
-// ==================== GAD-7 焦虑症量表（临床标准版7题） ====================
-const anxQ = [
-    {q:"感到紧张、焦虑或烦躁", d:"在过去两周，你有多频繁被以下问题困扰？", opts:["完全没有","几天","过半的天数","几乎每天"]},
-    {q:"无法停止或控制担忧", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
-    {q:"对各种各样的事情担忧过多", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
-    {q:"很难放松下来", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
-    {q:"坐立不安，很难安静坐着", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
-    {q:"容易烦躁或易怒", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]},
-    {q:"感到害怕——好像可怕的事情即将发生", d:"", opts:["完全没有","几天","过半的天数","几乎每天"]}
-];
-function anxResult(s) {
-    if (s<=4) return ["正常范围","无明显焦虑症状。","你的状态很好。保持正常生活节奏，注意劳逸结合就好。","🟢"];
-    if (s<=9) return ["轻度焦虑","有轻度焦虑倾向。可能偶尔感到紧张或担心。","轻度焦虑很常见。可以试试：①每天做几次深呼吸 ②规律运动 ③减少咖啡/茶摄入。如果持续超过两周且影响生活，建议关注。","🟡"];
-    if (s<=14) return ["中度焦虑","中度焦虑，对生活有一定影响。","建议：①到三甲医院心理科就诊评估 ②CBT认知行为疗法效果很好 ③此时靠自己调整可能比较困难，寻求专业帮助是明智的选择。","🟠"];
-    return ["重度焦虑","重度焦虑症状，需要引起重视。","请尽快到三甲医院精神科或心理科就诊。焦虑症是高度可治疗的，通过专业治疗（CBT+可能药物），绝大多数人能明显改善。这不是你软弱，是生病了，需要看医生。","🔴"];
+// ===== 登录弹窗 =====
+function showLoginModal() {
+  document.getElementById('loginModal').classList.add('active');
+  document.getElementById('loginErr').style.display = 'none';
+  document.getElementById('loginMsg').style.display = 'none';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPwd').value = '';
+}
+function hideLoginModal() {
+  document.getElementById('loginModal').classList.remove('active');
 }
 
-// 组合
-const tests = {
-    ocd: { name:"强迫症测试", label:"🧠 强迫症 (Y-BOCS标准版)", questions: ocdQ, maxScore:4, resultFn: ocdResult },
-    anxiety: { name:"焦虑症测试", label:"💧 焦虑症 (GAD-7标准版)", questions: anxQ, maxScore:3, resultFn: anxResult }
+// ===== 登录 =====
+async function doLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pwd = document.getElementById('loginPwd').value;
+  if (!email || !pwd) { showLoginErr('请输入邮箱和密码'); return; }
+  if (pwd.length < 6) { showLoginErr('密码至少6位'); return; }
+  initSupabase();
+  if (!supabase) { showLoginErr('Supabase 未配置，请联系管理员'); return; }
+  try {
+    var { data, error } = await supabase.auth.signInWithPassword({ email: email, password: pwd });
+    if (error) { showLoginErr(error.message); return; }
+    currentUser = data.user;
+    onLoginSuccess();
+  } catch(e) { showLoginErr('登录失败：' + e.message); }
+}
+
+// ===== 注册 =====
+async function doRegister() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pwd = document.getElementById('loginPwd').value;
+  if (!email || !pwd) { showLoginErr('请输入邮箱和密码'); return; }
+  if (pwd.length < 6) { showLoginErr('密码至少6位'); return; }
+  initSupabase();
+  if (!supabase) { showLoginErr('Supabase 未配置，请联系管理员'); return; }
+  try {
+    var { data, error } = await supabase.auth.signUp({ email: email, password: pwd });
+    if (error) { showLoginErr(error.message); return; }
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      showLoginErr('该邮箱已注册，请直接登录');
+      return;
+    }
+    // Supabase 默认发确认邮件，如果没有开启 email confirm，直接登录
+    if (data.session) {
+      currentUser = data.user;
+      onLoginSuccess();
+    } else {
+      showLoginMsg('注册成功！请检查邮箱确认（或联系管理员关闭邮箱确认）');
+    }
+  } catch(e) { showLoginErr('注册失败：' + e.message); }
+}
+
+function showLoginErr(msg) {
+  var el = document.getElementById('loginErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function showLoginMsg(msg) {
+  var el = document.getElementById('loginMsg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ===== 登录成功 =====
+async function onLoginSuccess() {
+  document.getElementById('loginNavBtn').style.display = 'none';
+  document.getElementById('userNavInfo').style.display = '';
+  document.getElementById('userNavInfo').textContent = currentUser.email;
+  document.getElementById('logoutNavBtn').style.display = '';
+  hideLoginModal();
+  await syncFromCloud();
+  renderChart();
+  renderHistory();
+  alert('✅ 登录成功！数据已同步');
+}
+
+// ===== 退出 =====
+async function logout() {
+  if (supabase) await supabase.auth.signOut();
+  currentUser = null;
+  document.getElementById('loginNavBtn').style.display = '';
+  document.getElementById('userNavInfo').style.display = 'none';
+  document.getElementById('logoutNavBtn').style.display = 'none';
+  alert('已退出登录');
+}
+
+// ===== 同步到云端 =====
+async function syncToCloud() {
+  if (!currentUser || !supabase) return;
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem('moodRecords')) || []; } catch(e) {}
+  if (records.length === 0) return;
+  // 先删除旧数据，再插入新数据
+  await supabase.from('mood_records').delete().eq('user_id', currentUser.id);
+  var rows = records.map(function(r) { return { user_id: currentUser.id, date: r.date, count: r.count, severity: r.severity, duration: r.duration, note: r.note || '' }; });
+  var { error } = await supabase.from('mood_records').insert(rows);
+  if (error) console.error('Sync to cloud failed:', error);
+}
+
+// ===== 从云端同步 =====
+async function syncFromCloud() {
+  if (!currentUser || !supabase) return;
+  var { data, error } = await supabase.from('mood_records').select('*').eq('user_id', currentUser.id);
+  if (error) { console.error('Sync from cloud failed:', error); return; }
+  if (data && data.length > 0) {
+    var records = data.map(function(r) { return { date: r.date, count: r.count, severity: r.severity, duration: r.duration, note: r.note || '' }; });
+    localStorage.setItem('moodRecords', JSON.stringify(records));
+  }
+}
+
+// ===== 生成备份链接（收藏链接功能）=====
+function generateBackupLink() {
+  var moodRecords = [];
+  var testRecords = [];
+  try { moodRecords = JSON.parse(localStorage.getItem('moodRecords')) || []; } catch(e) {}
+  try { testRecords = JSON.parse(localStorage.getItem('testRecords')) || []; } catch(e) {}
+  var data = { m: moodRecords, t: testRecords };
+  var json = JSON.stringify(data);
+  var base64 = btoa(unescape(encodeURIComponent(json)));  // UTF-8 safe base64
+  var url = window.location.href.split('?')[0].split('#')[0] + '?backup=' + encodeURIComponent(base64);
+  if (url.length > 2000) {
+    alert('⚠️ 数据太多，链接过长（' + url.length + ' 字符）。\n请删除部分旧记录后再试。');
+    return;
+  }
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() {
+      alert('✅ 备份链接已复制！\n\n请把这个链接收藏到微信或QQ，换手机时打开即可恢复数据。\n链接长度：' + url.length + ' 字符');
+    }).catch(function() {
+      prompt('请复制以下备份链接：', url);
+    });
+  } else {
+    prompt('请复制以下备份链接：', url);
+  }
+}
+
+// ===== 从 URL 备份参数导入 =====
+function importFromBackupUrl() {
+  var params = new URLSearchParams(window.location.search);
+  var backup = params.get('backup');
+  if (!backup) return;
+  try {
+    var json = decodeURIComponent(escape(atob(backup)));
+    var data = JSON.parse(json);
+    if (data.m) localStorage.setItem('moodRecords', JSON.stringify(data.m));
+    if (data.t) localStorage.setItem('testRecords', JSON.stringify(data.t));
+    alert('✅ 从备份链接恢复数据成功！');
+    // 清除 URL 中的 backup 参数（不刷新页面）
+    window.history.replaceState({}, '', window.location.pathname);
+    renderChart();
+    renderHistory();
+  } catch(e) {
+    console.error('Import from backup URL failed:', e);
+  }
+}
+
+// ===== 页面切换 =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function goHome() { showPage('home'); }
+
+// ===== 手册目录切换 =====
+var currentChapter = 0;
+function showToc() {
+  document.getElementById('hbToc').style.display = 'block';
+  var chapters = document.querySelectorAll('.hb-chapter');
+  for (var i = 0; i < chapters.length; i++) chapters[i].classList.remove('active');
+  currentChapter = 0;
+  window.scrollTo({ top: document.getElementById('hbToc').offsetTop - 80, behavior: 'smooth' });
+}
+function showChapter(n) {
+  document.getElementById('hbToc').style.display = 'none';
+  var chapters = document.querySelectorAll('.hb-chapter');
+  for (var i = 0; i < chapters.length; i++) chapters[i].classList.remove('active');
+  document.getElementById('ch' + n).classList.add('active');
+  currentChapter = n;
+  window.scrollTo({ top: document.getElementById('hbChapters').offsetTop - 80, behavior: 'smooth' });
+}
+
+// ===== 测试数据 =====
+var tests = {
+  ocd: {
+    name: '强迫症',
+    icon: '🔵',
+    questions: [
+      { q: '你每天花多少时间在强迫思维上（比如反复出现的念头、画面、冲动）？', opts: ['没有','小于1小时','1-3小时','3-8小时','超过8小时'] },
+      { q: '这些强迫思维在多大程度上干扰了你的学习、工作、社交或日常生活？', opts: ['无干扰','轻微','明显','较大','严重干扰'] },
+      { q: '你尝试对抗或消除这些强迫思维的努力程度如何？', opts: ['不尝试','轻微尝试','明显努力','很强努力','极度努力'] },
+      { q: '对抗这些强迫思维在多大程度上影响了你的情绪（焦虑、痛苦）？', opts: ['无影响','轻微','明显','较大','严重影响'] },
+      { q: '你每天花多少时间进行强迫行为（比如检查、清洗、计数、默念等）？', opts: ['没有','小于1小时','1-3小时','3-8小时','超过8小时'] },
+      { q: '这些强迫行为在多大程度上干扰了你的学习、工作、社交或日常生活？', opts: ['无干扰','轻微','明显','较大','严重干扰'] },
+      { q: '你尝试抵抗这些强迫行为的努力程度如何？', opts: ['不尝试','轻微尝试','明显努力','很强努力','极度努力'] },
+      { q: '如果这些强迫行为被阻止，你的焦虑或不舒服程度如何？', opts: ['不焦虑','轻微','明显','较大','极度焦虑'] },
+      { q: '这些强迫思维和强迫行为，在多大程度上影响了你的生活质量？', opts: ['无影响','轻微','明显','较大','严重影响'] },
+      { q: '综合来看，强迫症状对你造成的总痛苦程度如何？', opts: ['无痛苦','轻微','明显','较大','极度痛苦'] },
+    ],
+    resultFn: function(s) {
+      var level, title, desc, advice, color;
+      if (s <= 7) { level='正常'; title='未发现明显强迫症状'; desc='你的得分在正常范围内，强迫思维和行为未对日常生活造成明显影响。'; advice='继续保持健康的生活节奏。如果偶尔出现重复念头，不用紧张，大多数人都会有。'; color='#4caf50'; }
+      else if (s <= 13) { level='轻度'; title='轻度强迫倾向'; desc='有一些强迫思维或行为的表现，但对生活影响有限。很多人处于这个区间。'; advice='建议学习"顺其自然，为所当为"的态度，不要过度对抗症状。记录情绪变化，观察规律。'; color='#ff9800'; }
+      else if (s <= 20) { level='中度'; title='中度强迫症状'; desc='强迫思维和行为的频率或强度已经对生活造成较明显影响，建议重视。'; advice='建议阅读康复经历分享，学习系统性的自我练习方法。如果感到痛苦，建议前往正规医院心理科就诊。'; color='#ff5722'; }
+      else if (s <= 27) { level='重度'; title='重度强迫症状'; desc='症状已经对日常生活造成明显困扰，建议尽快寻求专业帮助。'; advice='请前往三甲医院心理科或精神科就诊。强迫症是可以治疗的，药物和心理治疗都很有效。你不是一个人。'; color='#e53935'; }
+      else { level='极重度'; title='极重度强迫症状'; desc='症状严重影响生活质量，请务必尽快寻求专业医疗帮助。'; advice='请尽快前往三甲医院心理科或精神科就诊。强迫症是可以治疗的，不要独自承受。生命很宝贵，求助是勇敢的表现。'; color='#b71c1c'; }
+      return [level, title, desc, advice, color, this.icon];
+    }
+  },
+  anxiety: {
+    name: '焦虑症',
+    icon: '🟢',
+    questions: [
+      { q: '过去两周内，你感到紧张、焦虑或烦躁不安的频率？', opts: ['完全没有','有几天','一半以上时间','几乎每天'] },
+      { q: '过去两周内，你无法停止或控制担忧的频率？', opts: ['完全没有','有几天','一半以上时间','几乎每天'] },
+      { q: '过去两周内，你对各种事情过度担忧的频率？', opts: ['完全没有','有几天','一半以上时间','几乎每天'] },
+      { q: '过去两周内，你很难放松下来的频率？', opts: ['完全没有','有几天','一半以上时间','几乎每天'] },
+      { q: '过去两周内，你坐立不安、感觉必须来回走动的频率？', opts: ['完全没有','有几天','一半以上时间','几乎每天'] },
+      { q: '过去两周内，你变得容易烦恼或急躁的频率？', opts: ['完全没有','有几天','一半以上时间','几乎每天'] },
+      { q: '过去两周内，你感到好像有什么可怕的事情要发生的频率？', opts: ['完全没有','有几天','一半以上时间','几乎每天'] },
+    ],
+    resultFn: function(s) {
+      var level, title, desc, advice, color;
+      if (s <= 4) { level='正常'; title='未发现明显焦虑症状'; desc='你的得分在正常范围内，过去两周内焦虑情绪不明显。'; advice='继续保持。如果偶尔感到焦虑，那是正常的情绪反应。'; color='#4caf50'; }
+      else if (s <= 9) { level='轻度'; title='轻度焦虑'; desc='有一些焦虑表现，可能对生活有轻微影响。'; advice='尝试记录焦虑触发的情况，学习放松技巧。如果症状持续超过一个月，建议重视。'; color='#ff9800'; }
+      else if (s <= 14) { level='中度'; title='中度焦虑'; desc='焦虑症状已经比较明显，建议重视并采取行动。'; advice='建议阅读焦虑管理的资料，学习系统性应对方法。如影响生活，建议就诊。'; color='#ff5722'; }
+      else { level='重度'; title='中重度焦虑'; desc='焦虑症状严重，建议尽快寻求专业帮助。'; advice='请前往三甲医院心理科或精神科就诊。焦虑症是可以有效治疗的，药物治疗和心理治疗效果都很好。'; color='#e53935'; }
+      return [level, title, desc, advice, color, this.icon];
+    }
+  }
 };
 
-let currentTest = null; // 'ocd' or 'anxiety'
-let idx = 0, ans = [];
-let savedResults = {}; // 保存两次测试的结果用于对比
+// ===== 测试逻辑 =====
+var currentTest = null;
+var idx = 0;
+var ans = [];
 
 function startTest(type) {
-    currentTest = type;
-    const t = tests[type];
-    ans = new Array(t.questions.length).fill(-1);
-    idx = 0;
-    document.getElementById('selectArea').classList.add('hidden');
-    document.getElementById('qArea').classList.remove('hidden');
-    document.getElementById('testTypeLabel').textContent = t.label;
-    renderQ();
+  currentTest = type;
+  idx = 0;
+  ans = [];
+  showPage('test-page');
+  renderQuestion();
 }
 
-function renderQ() {
-    const t = tests[currentTest];
-    const q = t.questions[idx];
-    document.getElementById('qNum').textContent = `第 ${idx+1}/${t.questions.length} 题`;
-    document.getElementById('pg').style.width = `${(idx/t.questions.length)*100}%`;
-    document.getElementById('qTitle').textContent = q.q;
-    document.getElementById('qDesc').textContent = q.d;
-
-    let h = '';
-    q.opts.forEach((txt, j) => {
-        const sel = ans[idx] === j ? 'selected' : '';
-        const label = t.maxScore === 4 ? ['0分','1分','2分','3分','4分'][j] : ['0分','1分','2分','3分'][j];
-        h += `<div class="opt-item ${sel}" onclick="pick(${j})">${txt} <span style="float:right;color:#bbb;font-size:12px">${label}</span></div>`;
-    });
-    document.getElementById('qOpts').innerHTML = h;
-    document.getElementById('nextBtn').disabled = (ans[idx] === -1);
-    document.getElementById('nextBtn').textContent = (idx === t.questions.length-1) ? '查看结果' : '下一题';
+function renderQuestion() {
+  var t = tests[currentTest];
+  var q = t.questions[idx];
+  document.getElementById('qNum').textContent = '第 ' + (idx+1) + '/' + t.questions.length + ' 题';
+  document.getElementById('qText').textContent = q.q;
+  var pct = ((idx+1)/t.questions.length)*100;
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progText').textContent = '进度 ' + (idx+1) + '/' + t.questions.length;
+  var html = '';
+  for (var i = 0; i < q.opts.length; i++) {
+    var selected = ans[idx] === i ? ' selected' : '';
+    html += '<div class="opt' + selected + '" onclick="selectOpt(' + i + ',this)"><span class="opt-score">' + i + '分</span><span>' + q.opts[i] + '</span></div>';
+  }
+  document.getElementById('qOpts').innerHTML = html;
+  document.getElementById('prevBtn').style.display = idx === 0 ? 'none' : '';
+  document.getElementById('nextBtn').disabled = (ans[idx] === undefined);
+  document.getElementById('nextBtn').textContent = (idx === t.questions.length-1) ? '查看结果' : '下一题';
 }
 
-function pick(oi) {
-    ans[idx] = oi;
-    renderQ();
-    document.getElementById('nextBtn').scrollIntoView({behavior:'smooth', block:'nearest'});
+function selectOpt(i, el) {
+  ans[idx] = i;
+  var opts = el.parentNode.querySelectorAll('.opt');
+  for (var j = 0; j < opts.length; j++) opts[j].classList.remove('selected');
+  el.classList.add('selected');
+  document.getElementById('nextBtn').disabled = false;
 }
 
-function nextQ() {
-    if (ans[idx] === -1) return;
-    const t = tests[currentTest];
-    if (idx < t.questions.length - 1) {
-        idx++;
-        renderQ();
-    } else {
-        showResult();
-    }
+function next() {
+  if (ans[idx] === undefined) return;
+  if (idx < tests[currentTest].questions.length - 1) { idx++; renderQuestion(); }
+  else { showResult(); }
 }
 
+function prev() {
+  if (idx > 0) { idx--; renderQuestion(); }
+}
+
+// ===== 结果显示 + 分享 =====
 function showResult() {
-    let s = 0;
-    for (let i = 0; i < ans.length; i++) if (ans[i] >= 0) s += ans[i];
-    document.getElementById('qArea').classList.add('hidden');
-    document.getElementById('rArea').classList.remove('hidden');
-    document.getElementById('pg').style.width = '100%';
-
-    const t = tests[currentTest];
-    const [title, desc, advice, icon] = t.resultFn(s);
-    document.getElementById('rScore').textContent = s;
-    document.getElementById('rTitle').textContent = icon + ' ' + title;
-    document.getElementById('rDesc').textContent = desc;
-    document.getElementById('rCard').innerHTML = '<strong>给你的话：</strong><br><br>' + advice;
-
-    // 保存结果
-    savedResults[currentTest] = s;
-    // 渲染可视化
-    renderChart();
+  var t = tests[currentTest];
+  var s = 0;
+  for (var i = 0; i < ans.length; i++) if (ans[i] >= 0) s += ans[i];
+  var result = t.resultFn(s);
+  var level = result[0];
+  var title = result[1];
+  var desc = result[2];
+  var advice = result[3];
+  var color = result[4];
+  var icon = result[5];
+  saveTestResult(currentTest, s, level);
+  var shareUrl = window.location.href.split('?')[0].split('#')[0] + '?result=' + currentTest + '_' + s;
+  document.getElementById('resultHero').innerHTML =
+    '<div style="font-size:48px;margin-bottom:12px;">' + icon + '</div>' +
+    '<div class="result-score-big" style="color:' + color + '">' + s + '</div>' +
+    '<div style="font-size:13px;color:#aaa;margin-bottom:8px;">' + (currentTest==='ocd'?'Y-BOCS总分（0-40）':'GAD-7总分（0-21）') + '</div>' +
+    '<div class="result-title" style="color:' + color + '">' + title + '</div>' +
+    '<div class="result-desc">' + desc + '</div>' +
+    '<div class="result-advice"><strong>给你的话：</strong><br><br>' + advice + '</div>' +
+    '<div class="share-btns">' +
+      '<button class="share-btn" onclick="copyShareLink()">🔗 复制结果链接分享</button>' +
+    '</div>';
+  document.getElementById('nextCards').innerHTML =
+    '<div class="next-card" onclick="showPage(\'story-page\')">' +
+      '<div class="nc-icon">🌱</div>' +
+      '<div class="nc-body"><h4>看看我是怎么走出来的</h4><p>6年强迫症自愈经历分享 · 顺其自然，为所当为</p></div>' +
+    '</div>' +
+    '<div class="next-card" onclick="showPage(\'record-page\')">' +
+      '<div class="nc-icon">📊</div>' +
+      '<div class="nc-body"><h4>开始记录我的情绪变化</h4><p>每天30秒，坚持记录，看到自己的康复曲线</p></div>' +
+    '</div>' +
+    '<div class="next-card" onclick="showPage(\'handbook-page\')">' +
+      '<div class="nc-icon">📖</div>' +
+      '<div class="nc-body"><h4>查看康复指导手册</h4><p>10章完整内容 · 基于自愈经历 + 森田疗法</p></div>' +
+    '</div>' +
+    '<div class="next-card" onclick="goHome()">' +
+      '<div class="nc-icon">🔄</div>' +
+      '<div class="nc-body"><h4>再做一次测试</h4><p>间隔1-2周再测，观察变化</p></div>' +
+    '</div>';
+  showPage('result-page');
 }
 
-function backToSelect() {
-    currentTest = null;
-    document.getElementById('rArea').classList.add('hidden');
-    document.getElementById('selectArea').classList.remove('hidden');
-    document.getElementById('pg').style.width = '0%';
-}
-
-function retake() {
-    // 重测时清除当前测试的存档
-    const type = currentTest;
-    delete savedResults[type];
-    backToSelect();
-    startTest(type);
-}
-
-// 渲染柱状图
-function renderChart() {
-    const items = [];
-    // 强迫思维 (Q1-5)
-    if (savedResults.ocd !== undefined) {
-        // 计算强迫思维分和强迫行为分
-        // 但这里我们直接用总分，因为Y-BOCS总分就是10-40的范围
-        const maxOcd = 40;
-        items.push({ label:'强迫症', score: savedResults.ocd, max: maxOcd, color: '#7c4dff' });
-    }
-    if (savedResults.anxiety !== undefined) {
-        const maxAnx = 21;
-        items.push({ label:'焦虑症', score: savedResults.anxiety, max: maxAnx, color: '#00bcd4' });
-    }
-
-    if (items.length === 0) { document.getElementById('chartArea').classList.add('hidden'); return; }
-    document.getElementById('chartArea').classList.remove('hidden');
-
-    let html = '';
-    items.forEach(item => {
-        const pct = Math.min(100, (item.score / item.max) * 100);
-        const barColor = pct > 70 ? '#ef5350' : pct > 40 ? '#ff9800' : item.color;
-        html += `<div class="chart-row">
-            <div class="chart-label">${item.label}</div>
-            <div class="chart-bar-bg">
-                <div class="chart-bar-fill" style="width:${pct}%;background:${barColor}">
-                    <span>${item.score}</span>
-                </div>
-            </div>
-            <div class="chart-max">/${item.max}</div>
-        </div>`;
+// ===== 结果分享链接 =====
+function copyShareLink() {
+  var t = tests[currentTest];
+  var s = 0;
+  for (var i = 0; i < ans.length; i++) if (ans[i] >= 0) s += ans[i];
+  var base = window.location.href.split('?')[0].split('#')[0];
+  var link = base + '?result=' + currentTest + '_' + s;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(function() {
+      alert('✅ 链接已复制！分享给朋友，对方打开就能看到你的结果。');
+    }).catch(function() {
+      fallbackCopy(link);
     });
-    document.getElementById('chartContent').innerHTML = html;
+  } else {
+    fallbackCopy(link);
+  }
 }
 
-function copyLink() {
-    const u = window.location.href;
-    if (navigator.clipboard) { navigator.clipboard.writeText(u).then(()=>alert('链接已复制！')); }
-    else { prompt('复制链接：', u); }
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); alert('✅ 链接已复制！'); } catch(e) { prompt('复制以下链接分享：', text); }
+  document.body.removeChild(ta);
 }
 
-document.addEventListener('keydown', e => { if (e.key==='Enter' && !document.getElementById('nextBtn').disabled) nextQ(); });
+// ===== URL参数检测：打开时如果有 ?result=xxx_yy 直接显示结果 =====
+(function checkUrlResult() {
+  var m = window.location.search.match(/result=(\w+)_(\d+)/);
+  if (m) {
+    var type = m[1], score = parseInt(m[2]);
+    var t = tests[type];
+    if (!t) return;
+    var result = t.resultFn(score);
+    document.getElementById('resultHero').innerHTML =
+      '<div style="font-size:48px;margin-bottom:12px;">' + result[5] + '</div>' +
+      '<div class="result-score-big" style="color:' + result[4] + '">' + score + '</div>' +
+      '<div style="font-size:13px;color:#aaa;margin-bottom:8px;">' + (type==='ocd'?'Y-BOCS总分（0-40）':'GAD-7总分（0-21）') + '</div>' +
+      '<div class="result-title" style="color:' + result[4] + '">' + result[1] + '</div>' +
+      '<div class="result-desc">' + result[2] + '</div>' +
+      '<div class="result-advice"><strong>给你的话：</strong><br><br>' + result[3] + '</div>' +
+      '<div class="share-btns">' +
+        '<button class="share-btn" onclick="goHome()">🏠 返回首页 做一次测试</button>' +
+      '</div>';
+    showPage('result-page');
+  }
+})();
+
+// ===== 本地存储：测试结果 =====
+function saveTestResult(type, score, level) {
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem('testRecords')) || []; } catch(e) { records = []; }
+  records.push({ date: new Date().toISOString().slice(0,10), type: type, score: score, level: level });
+  try { localStorage.setItem('testRecords', JSON.stringify(records)); } catch(e) {}
+}
+
+// ===== 情绪记录功能（三个维度）=====
+function changeCount(delta) {
+  var el = document.getElementById('recordCount');
+  var v = parseInt(el.textContent) || 0;
+  v = Math.max(0, Math.min(100, v + delta));
+  el.textContent = v;
+}
+
+var selectedSeverity = 0;
+
+function initSeveritySelector() {
+  var wrap = document.getElementById('severitySelector');
+  if (!wrap) return;
+  var html = '';
+  for (var i = 1; i <= 10; i++) {
+    html += '<button class="score-btn" onclick="selectSeverity(' + i + ',this)">' + i + '</button>';
+  }
+  wrap.innerHTML = html;
+}
+
+function selectSeverity(s, el) {
+  selectedSeverity = s;
+  var btns = el.parentNode.querySelectorAll('.score-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
+  el.classList.add('selected');
+}
+
+function saveRecord() {
+  var count = parseInt(document.getElementById('recordCount').textContent) || 0;
+  if (selectedSeverity === 0) { alert('请先选择程度（1-10分）'); return; }
+  var severity = selectedSeverity;
+  var duration = parseInt(document.getElementById('recordDuration').value) || 0;
+  var note = document.getElementById('recordNote') ? document.getElementById('recordNote').value : '';
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem('moodRecords')) || []; } catch(e) { records = []; }
+  var today = new Date().toISOString().slice(0,10);
+  var existIdx = -1;
+  for (var i = 0; i < records.length; i++) { if (records[i].date === today) { existIdx = i; break; } }
+  var entry = { date: today, count: count, severity: severity, duration: duration, note: note };
+  if (existIdx >= 0) records[existIdx] = entry;
+  else records.push(entry);
+  try { localStorage.setItem('moodRecords', JSON.stringify(records)); } catch(e) {}
+  document.getElementById('saveMsg').textContent = '✅ 已保存！';
+  selectedSeverity = 0;
+  var btns = document.querySelectorAll('#severitySelector .score-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('selected');
+  document.getElementById('recordDuration').value = '0';
+  setTimeout(function() { document.getElementById('saveMsg').textContent = ''; }, 2000);
+  renderChart();
+  renderHistory();
+  // 如果已登录，同步到云端
+  if (currentUser) syncToCloud();
+}
+
+// ===== 康复曲线图（三条曲线）=====
+function renderChart() {
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem('moodRecords')) || []; } catch(e) { records = []; }
+  var canvas = document.getElementById('trendChart');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 240 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '240px';
+  ctx.scale(dpr, dpr);
+  var W = rect.width, H = 240;
+  ctx.clearRect(0, 0, W, H);
+  if (records.length === 0) {
+    ctx.fillStyle = '#ccc';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('还没有记录，今天开始吧 😊', W/2, H/2);
+    return;
+  }
+  records.sort(function(a,b) { return a.date.localeCompare(b.date); });
+  var N = Math.min(records.length, 30);
+  var show = records.slice(-N);
+  var padL = 44, padR = 16, padT = 24, padB = 36;
+  var cW = W - padL - padR, cH = H - padT - padB;
+  // 坐标轴
+  ctx.strokeStyle = '#eee';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, H-padB); ctx.lineTo(W-padR, H-padB); ctx.stroke();
+  // Y轴标签
+  ctx.fillStyle = '#aaa';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('0', padL-6, H-padB+4);
+  ctx.fillText('次', padL-6, padT+10);
+  // 三条曲线：次数(紫)、程度(蓝)、持续时间(绿)
+  var colors = ['#7c4dff', '#00bcd4', '#4caf50'];
+  var keys = ['count', 'severity', 'duration'];
+  var labels = ['次数', '程度', '时长(min)'];
+  var maxVals = [0, 10, 120];
+  // 计算最大值
+  var maxCount = 0, maxDuration = 120;
+  for (var i = 0; i < show.length; i++) {
+    if (show[i].count > maxCount) maxCount = show[i].count;
+    if (show[i].duration > maxDuration) maxDuration = show[i].duration;
+  }
+  maxVals[0] = Math.max(maxCount, 5);
+  maxVals[2] = Math.max(maxDuration, 60);
+  // 绘制三条曲线
+  for (var k = 0; k < 3; k++) {
+    var key = keys[k];
+    var color = colors[k];
+    var maxVal = maxVals[k];
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (var i = 0; i < show.length; i++) {
+      var x = padL + (i / Math.max(show.length-1,1)) * cW;
+      var val = show[i][key] || 0;
+      var y = padT + cH - (val / maxVal) * cH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    // 画点
+    for (var i = 0; i < show.length; i++) {
+      var x = padL + (i / Math.max(show.length-1,1)) * cW;
+      var val = show[i][key] || 0;
+      var y = padT + cH - (val / maxVal) * cH;
+      ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2); ctx.fillStyle = color; ctx.fill();
+    }
+  }
+  // 图例
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'left';
+  for (var i = 0; i < 3; i++) {
+    ctx.fillStyle = colors[i];
+    ctx.fillRect(padL + i*60, H-padB+18, 12, 8);
+    ctx.fillStyle = '#888';
+    ctx.fillText(labels[i], padL + i*60 + 16, H-padB+26);
+  }
+  // X轴日期
+  ctx.fillStyle = '#aaa';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  var step = Math.max(1, Math.floor(show.length / 5));
+  for (var i = 0; i < show.length; i++) {
+    if (i % step === 0 || i === show.length-1) {
+      var x = padL + (i / Math.max(show.length-1,1)) * cW;
+      ctx.fillText(show[i].date.slice(5), x, H-padB+40);
+    }
+  }
+}
+
+// ===== 历史记录列表（三个维度）=====
+function renderHistory() {
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem('moodRecords')) || []; } catch(e) { records = []; }
+  var wrap = document.getElementById('historyList');
+  if (records.length === 0) { wrap.innerHTML = '<p style="color:#ccc;font-size:13px;">还没有记录，今天开始吧 😊</p>'; return; }
+  records.sort(function(a,b) { return b.date.localeCompare(a.date); });
+  var html = '';
+  for (var i = 0; i < records.length; i++) {
+    var r = records[i];
+    var c = r.severity <= 3 ? '#4caf50' : r.severity <= 5 ? '#8bc34a' : r.severity <= 7 ? '#ff9800' : '#e53935';
+    var countStr = (r.count !== undefined ? r.count + '次' : '—');
+    var durStr = (r.duration !== undefined && r.duration > 0 ? r.duration + '分' : '—');
+    html += '<div class="history-item">' +
+      '<span class="hi-date">' + r.date + '</span>' +
+      '<span class="hi-severity" style="color:' + c + '">' + (r.severity||0) + '分</span>' +
+      '<span class="hi-count">' + countStr + '</span>' +
+      '<span class="hi-dur">' + durStr + '</span>' +
+      '<span class="hi-note">' + (r.note||'—') + '</span>' +
+      '<button class="hi-delete" onclick="deleteRecord(\'' + r.date + '\')" title="删除">✕</button>' +
+    '</div>';
+  }
+  wrap.innerHTML = html;
+}
+
+function deleteRecord(date) {
+  if (!confirm('确定删除这条记录？')) return;
+  var records = [];
+  try { records = JSON.parse(localStorage.getItem('moodRecords')) || []; } catch(e) { records = []; }
+  var filtered = [];
+  for (var i = 0; i < records.length; i++) { if (records[i].date !== date) filtered.push(records[i]); }
+  records = filtered;
+  try { localStorage.setItem('moodRecords', JSON.stringify(records)); } catch(e) {}
+  renderChart();
+  renderHistory();
+  if (currentUser) syncToCloud();
+}
+
+// ===== 数据导出/导入 =====
+function exportData() {
+  var moodRecords = [];
+  var testRecords = [];
+  try { moodRecords = JSON.parse(localStorage.getItem('moodRecords')) || []; } catch(e) {}
+  try { testRecords = JSON.parse(localStorage.getItem('testRecords')) || []; } catch(e) {}
+  var data = { exportDate: new Date().toISOString().slice(0,10), moodRecords: moodRecords, testRecords: testRecords };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '脱扣数据备份_' + data.exportDate + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (data.moodRecords) {
+        localStorage.setItem('moodRecords', JSON.stringify(data.moodRecords));
+      }
+      if (data.testRecords) {
+        localStorage.setItem('testRecords', JSON.stringify(data.testRecords));
+      }
+      alert('✅ 数据导入成功！共导入 ' + (data.moodRecords ? data.moodRecords.length : 0) + ' 条情绪记录');
+      renderChart();
+      renderHistory();
+      if (currentUser) syncToCloud();
+    } catch(err) {
+      alert('❌ 导入失败：文件格式不正确');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ===== 初始化 =====
+window.onload = function() {
+  initSeveritySelector();
+  // 检查 URL 中是否有备份参数
+  importFromBackupUrl();
+  renderChart();
+  renderHistory();
+  // 检查是否已登录（Supabase session）
+  initSupabase();
+  if (supabase) {
+    supabase.auth.getSession().then(function(res) {
+      if (res.data && res.data.session) {
+        supabase.auth.getUser().then(function(u) {
+          if (u.data && u.data.user) {
+            currentUser = u.data.user;
+            document.getElementById('loginNavBtn').style.display = 'none';
+            document.getElementById('userNavInfo').style.display = '';
+            document.getElementById('userNavInfo').textContent = currentUser.email;
+            document.getElementById('logoutNavBtn').style.display = '';
+            syncFromCloud();
+            renderChart();
+            renderHistory();
+          }
+        });
+      }
+    });
+  }
+};
 </script>
 </body>
 </html>
